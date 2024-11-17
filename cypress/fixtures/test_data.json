@@ -1,0 +1,7 @@
+{
+    "test_username":"standard_user",
+    "test_password":"secret_sauce",
+    "errorUser": "error_user",
+    "problemUser": "problem_user"
+
+}

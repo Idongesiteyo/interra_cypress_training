@@ -1,0 +1,30 @@
+{
+  "name": "cypress-training",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "cypress:open": "cypress open",
+    "cy:runHeaded": "cypress run --headed",
+    "cy:run": "cypress run",
+    "cypress:run:spec": "cypress run --spec 'cypress/e2e/test_cases/loginTest.cy.js'",
+    "cypress:run:spec2": "cypress run --spec 'cypress/e2e/test_cases/first_test_case.cy.js'",
+    "test": "npm run mochawesome:clear && npm run cy:run && npm run report:open",
+    "mochawesome:clear": "if exist cypress\\reports (rd /s /q cypress\\reports)",
+    "report:open": "start cypress/reports/index.html",
+    "test:single": "npm run mochawesome:clear && npm run cypress:run:spec && npm run report:open"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@shelex/cypress-allure-plugin": "^2.40.2",
+    "@testing-library/cypress": "^10.0.2",
+    "allure-commandline": "^2.32.0",
+    "cypress": "^12.13.0",
+    "cypress-file-upload": "^5.0.8",
+    "cypress-mochawesome-reporter": "^3.8.2",
+    "cypress-xpath": "^2.0.1",
+    "faker": "^6.6.6"
+  }
+}
