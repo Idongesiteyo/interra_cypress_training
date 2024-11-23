@@ -20,23 +20,33 @@ jobs:
         browser: [chrome, edge]
 
     steps:
+      # Step 1: Checkout Repository
       - name: Checkout Repository
         uses: actions/checkout@v3
 
+      # Step 2: Set up Node.js
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
           node-version: 18
 
+      # Step 3: Install Dependencies
       - name: Install Dependencies
         run: npm ci
 
+      # Step 4: Install Cypress
       - name: Install Cypress
         run: npx cypress install
 
+      # Step 5: Grant Permissions
       - name: Grant Permissions
         run: chmod +x ./node_modules/.bin/cypress
 
+      # Step 6: Create Report Directory
+      - name: Create Report Directory
+        run: mkdir -p cypress/reports
+
+      # Step 7: Run Cypress Tests based on Branch
       - name: Run Cypress Tests on ${{ matrix.browser }}
         run: |
           BRANCH_NAME=""
@@ -64,6 +74,27 @@ jobs:
             exit 1
           fi
 
+      # Step 8: Merge Reports (if multiple JSON files exist)
+      - name: Merge Mochawesome Reports
+        run: |
+          if ls cypress/reports/*.json 1> /dev/null 2>&1; then
+            echo "Merging Mochawesome reports..."
+            npx mochawesome-merge cypress/reports/*.json -o cypress/reports/merged-report.json
+          else
+            echo "No JSON reports found to merge."
+          fi
+
+      # Step 9: Generate HTML Report from Merged JSON
+      - name: Generate HTML Report
+        run: |
+          if [ -f cypress/reports/merged-report.json ]; then
+            echo "Generating HTML report..."
+            npx marge cypress/reports/merged-report.json -o cypress/reports/
+          else
+            echo "No merged report found to generate HTML."
+          fi
+
+      # Step 10: Archive Mochawesome Reports
       - name: Archive Mochawesome Report
         if: always()
         uses: actions/upload-artifact@v3
