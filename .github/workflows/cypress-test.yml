@@ -1,6 +1,5 @@
 name: Cypress Tests
 
-# Define when the workflow should run
 on:
   push:
     branches:
@@ -14,57 +13,60 @@ on:
 jobs:
   cypress-tests:
     name: Run Cypress Tests
-    runs-on: ubuntu-latest # Use the latest Ubuntu runner
+    runs-on: ubuntu-latest
 
-    # Define a matrix strategy to run tests on multiple browsers in parallel
     strategy:
       matrix:
-        browser: [chrome, edge, firefox] # Browsers to test on (each runs as a separate job)
+        browser: [chrome, edge, firefox]
 
     steps:
-      # Step 1: Check out the code from the repository
       - name: Checkout Repository
         uses: actions/checkout@v3
 
-      # Step 2: Set up Node.js environment
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
           node-version: 18
 
-      # Step 3: Install all project dependencies
       - name: Install Dependencies
         run: npm ci
 
-      # Step 4: Install Cypress explicitly
       - name: Install Cypress
         run: npx cypress install
 
-      # Step 5: Grant execute permissions to Cypress binary
       - name: Grant Permissions
         run: chmod +x ./node_modules/.bin/cypress
 
-      # Step 6: Run Cypress tests based on the branch and tags
       - name: Run Cypress Tests on ${{ matrix.browser }}
         run: |
-          if [ "${{ matrix.branch }}" = "staging" ]; then
+          BRANCH_NAME=""
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            BRANCH_NAME="${{ github.base_ref }}"
+          else
+            BRANCH_NAME="${{ github.ref_name }}"
+          fi
+
+          if [ "$BRANCH_NAME" = "staging" ]; then
             echo "Running smoke tests on staging branch..."
             npx cypress run \
               --browser ${{ matrix.browser }} \
               --env grep=@smoke \
               --reporter mochawesome \
-              --reporter-options reportDir=cypress/reports,reportFilename=index.html \
-          elif [ "${{ matrix.branch }}" = "main" ]; then
+              --reporter-options reportDir=cypress/reports,reportFilename=index.html
+          elif [ "$BRANCH_NAME" = "main" ]; then
             echo "Running full test suite on main branch..."
             npx cypress run \
               --browser ${{ matrix.browser }} \
               --reporter mochawesome \
-              --reporter-options reportDir=cypress/reports,reportFilename=index.html \
+              --reporter-options reportDir=cypress/reports,reportFilename=index.html
+          else
+            echo "Branch $BRANCH_NAME not configured for testing"
+            exit 1
           fi
 
-      # Step 7: Archive the test report generated for this browser
       - name: Archive Mochawesome Report
+        if: always()
         uses: actions/upload-artifact@v3
         with:
-          name: mochawesome-report-${{ matrix.browser }}
+          name: mochawesome-report-${{ matrix.browser }}-${{ github.sha }}
           path: cypress/reports/
