@@ -40,13 +40,15 @@ describe('Test suite with hooks', () =>{
         // cy.get(':nth-child(1) > .form-control').click()
         // cy.get(':nth-child(2) > .form-control').click()
         cy.log('Login successful')
+        console.log('Current grep pattern:', Cypress.env('grep'))
+
         // cy.wait(10000)
     });
     
     
 
 
-    it('Standard user login', function(){
+    it('Standard user @smoke', function(){
 
         cy.get('[data-test="username"]').type(userData.test_username)
         cy.get('[data-test="password"]').type(userData.test_password)

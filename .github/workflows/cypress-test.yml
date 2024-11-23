@@ -1,0 +1,65 @@
+name: Cypress Tests
+
+# Define when the workflow should run
+on:
+  push:
+    branches:
+      - main
+      - staging
+  pull_request:
+    branches:
+      - main
+      - staging
+
+jobs:
+  cypress-tests:
+    name: Run Cypress Tests
+    runs-on: ubuntu-latest # Use the latest Ubuntu runner
+
+    # Define a matrix strategy to run tests on multiple browsers in parallel
+    strategy:
+      matrix:
+        browser: [chrome, edge, firefox] # Browsers to test on (each runs as a separate job)
+        branch: [main, staging] # Add branch context to the matrix
+
+    steps:
+      # Step 1: Check out the code from the repository
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      # Step 2: Set up Node.js environment
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+
+      # Step 3: Install all project dependencies
+      - name: Install Dependencies
+        run: npm install
+
+      # Step 4: Run Cypress tests based on the branch and tags
+      - name: Run Cypress Tests on ${{ matrix.browser }}
+        run: |
+          if [[ "${{ matrix.branch }}" == "staging" ]]; then
+            npx cypress run \
+              --browser ${{ matrix.browser }} \
+              --env grep=@smoke \
+              --reporter mochawesome \
+              --reporter-options reportDir=cypress/reports,reportFilename=index.html \
+              --parallel \
+              --group ${{ matrix.browser }}
+          elif [[ "${{ matrix.branch }}" == "main" ]]; then
+            npx cypress run \
+              --browser ${{ matrix.browser }} \
+              --reporter mochawesome \
+              --reporter-options reportDir=cypress/reports,reportFilename=index.html \
+              --parallel \
+              --group ${{ matrix.browser }}
+          fi
+
+      # Step 5: Archive the test report generated for this browser
+      - name: Archive Mochawesome Report
+        uses: actions/upload-artifact@v3
+        with:
+          name: mochawesome-report-${{ matrix.browser }}
+          path: cypress/reports/
