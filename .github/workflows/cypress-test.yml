@@ -47,14 +47,14 @@ jobs:
       # Step 6: Run Cypress tests based on the branch and tags
       - name: Run Cypress Tests on ${{ matrix.browser }}
         run: |
-          if [[ "${{ github.ref_name }}" == "staging" ]]; then
+          if [ "${{ matrix.branch }}" = "staging" ]; then
             echo "Running smoke tests on staging branch..."
             npx cypress run \
               --browser ${{ matrix.browser }} \
               --env grep=@smoke \
               --reporter mochawesome \
               --reporter-options reportDir=cypress/reports,reportFilename=index.html \
-          elif [[ "${{ github.ref_name }}" == "main" ]]; then
+          elif [ "${{ matrix.branch }}" = "main" ]; then
             echo "Running full test suite on main branch..."
             npx cypress run \
               --browser ${{ matrix.browser }} \
