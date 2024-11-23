@@ -54,16 +54,12 @@ jobs:
               --env grep=@smoke \
               --reporter mochawesome \
               --reporter-options reportDir=cypress/reports,reportFilename=index.html \
-              --parallel \
-              --group ${{ matrix.browser }}
           elif [[ "${{ github.ref_name }}" == "main" ]]; then
             echo "Running full test suite on main branch..."
             npx cypress run \
               --browser ${{ matrix.browser }} \
               --reporter mochawesome \
               --reporter-options reportDir=cypress/reports,reportFilename=index.html \
-              --parallel \
-              --group ${{ matrix.browser }}
           fi
 
       # Step 7: Archive the test report generated for this browser
