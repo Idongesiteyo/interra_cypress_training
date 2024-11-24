@@ -18,12 +18,12 @@ on:
 jobs:
   cypress-tests:
     name: Run Cypress Tests              # Display name for the job
-    runs-on: ubuntu-latest               # Use latest Ubuntu runner
+    runs-on: ubuntu-latest              # Use latest Ubuntu runner
 
     # Define a matrix strategy to run tests on multiple browsers
     strategy:
       matrix:
-        browser: [chrome, edge]          # Run tests on Chrome and Edge
+        browser: [chrome, edge]         # Run tests on Chrome and Edge
 
     # Define the sequence of steps to be executed
     steps:
@@ -35,11 +35,11 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: 18               # Use Node.js version 18
+          node-version: 18              # Use Node.js version 18
 
       # Step 3: Install project dependencies
       - name: Install Dependencies
-        run: npm ci                      # Clean install of dependencies
+        run: npm ci                     # Clean install of dependencies
 
       # Step 4: Install Cypress
       - name: Install Cypress
@@ -70,25 +70,25 @@ jobs:
               --browser ${{ matrix.browser }} \
               --env grep=@smoke \                    # Filter for smoke tests
               --reporter mochawesome \               # Use mochawesome reporter
-              --reporter-options reportDir=cypress/reports,reportFilename=index.html || echo "Cypress tests failed but continuing..."
+              --reporter-options reportDir=cypress/reports,reportFilename=index.html
           elif [ "$BRANCH_NAME" = "main" ]; then
             # Run full test suite on main
             echo "Running full test suite on main branch..."
             npx cypress run \
               --browser ${{ matrix.browser }} \
               --reporter mochawesome \
-              --reporter-options reportDir=cypress/reports,reportFilename=index.html || echo "Cypress tests failed but continuing..."
+              --reporter-options reportDir=cypress/reports,reportFilename=index.html
           else
             # Exit with error for undefined branches
             echo "Branch $BRANCH_NAME not configured for testing"
             exit 1
+          fi
 
       # Step 7: Save test results as artifacts
       - name: Archive Mochawesome Report
-        if: always()                     # Run this step regardless of test results
+        if: always()                    # Run this step regardless of test results
         uses: actions/upload-artifact@v3
         with:
           # Create unique artifact name using browser and commit SHA
           name: mochawesome-report-${{ matrix.browser }}-${{ github.sha }}
-          path: cypress/reports/         # Location of test reports
-        continue-on-error: true          # Ensure this step doesn't fail the workflow
+          path: cypress/reports/        # Location of test reports

@@ -15,7 +15,7 @@ registerCypressGrep()
 // require('./commands')
 
 // Optional: Add grep debugging
-Cypress.on('test:before:run', (test) => {
-    console.log('Current grep pattern:', Cypress.env('grep'))
-    console.log('Running test:', test.title)
-})
+// Cypress.on('test:before:run', (test) => {
+//     console.log('Current grep pattern:', Cypress.env('grep'))
+//     console.log('Running test:', test.title)
+// })
