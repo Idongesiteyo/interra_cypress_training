@@ -31,12 +31,8 @@ jobs:
           node-version: 18
 
       # Step 3: Install Dependencies
-      - name: Install Dependencies
-        run: npm ci
-
-      # Step 4: Install Cypress
-      - name: Install Cypress
-        run: npx cypress install
+      - name: Cypress run
+        run: cypress-io/github-action@v6
 
       # Step 5: Grant Permissions
       - name: Grant Permissions
