@@ -1,4 +1,4 @@
-name: Cypress Tests
+name: Cypress Tests with Stages and Output Logging
 
 on:
   push:
@@ -20,32 +20,32 @@ jobs:
         browser: [chrome, edge]
 
     steps:
-      # Step 1: Checkout Repository
+      # Stage 1: Setup
       - name: Checkout Repository
         uses: actions/checkout@v3
 
-      # Step 2: Set up Node.js
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
           node-version: 18
 
-      # Step 3: Install Dependencies
-      - name: Cypress run
-        run: cypress-io/github-action@v6
+      - name: Install Dependencies
+        run: npm ci
 
-      # Step 5: Grant Permissions
+      - name: Install Cypress
+        run: npx cypress install
+
       - name: Grant Permissions
         run: chmod +x ./node_modules/.bin/cypress
 
-      # Step 6: Create Report Directory
       - name: Create Report Directory
         run: mkdir -p cypress/reports
 
-      # Step 7: Run Cypress Tests based on Branch
-      - name: Run Cypress Tests on ${{ matrix.browser }}
+      # Stage 2: Testing
+      - name: Determine Branch and Run Cypress Tests on ${{ matrix.browser }}
         run: |
           BRANCH_NAME=""
+
           if [ "${{ github.event_name }}" = "pull_request" ]; then
             BRANCH_NAME="${{ github.base_ref }}"
           else
@@ -58,19 +58,20 @@ jobs:
               --browser ${{ matrix.browser }} \
               --env grep=@smoke \
               --reporter mochawesome \
-              --reporter-options reportDir=cypress/reports,reportFilename=index.html
+              --reporter-options reportDir=cypress/reports,reportFilename=index.html \
+              > cypress-output.txt 2>&1
           elif [ "$BRANCH_NAME" = "main" ]; then
             echo "Running full test suite on main branch..."
             npx cypress run \
               --browser ${{ matrix.browser }} \
               --reporter mochawesome \
-              --reporter-options reportDir=cypress/reports,reportFilename=index.html
+              --reporter-options reportDir=cypress/reports,reportFilename=index.html \
+              > cypress-output.txt 2>&1
           else
             echo "Branch $BRANCH_NAME not configured for testing"
             exit 1
-          fi
 
-      # Step 8: Merge Reports (if multiple JSON files exist)
+      # Stage 3: Reporting
       - name: Merge Mochawesome Reports
         run: |
           if ls cypress/reports/*.json 1> /dev/null 2>&1; then
@@ -80,8 +81,7 @@ jobs:
             echo "No JSON reports found to merge."
           fi
 
-      # Step 9: Generate HTML Report from Merged JSON
-      - name: Generate HTML Report
+      - name: Generate HTML Report from Merged JSON
         run: |
           if [ -f cypress/reports/merged-report.json ]; then
             echo "Generating HTML report..."
@@ -90,10 +90,17 @@ jobs:
             echo "No merged report found to generate HTML."
           fi
 
-      # Step 10: Archive Mochawesome Reports
       - name: Archive Mochawesome Report
         if: always()
         uses: actions/upload-artifact@v3
         with:
           name: mochawesome-report-${{ matrix.browser }}-${{ github.sha }}
           path: cypress/reports/
+
+      # Stage 4: Upload Cypress Output
+      - name: Upload Cypress Output
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: cypress-output-${{ matrix.browser }}-${{ github.sha }}
+          path: cypress-output.txt
