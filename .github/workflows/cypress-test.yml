@@ -30,6 +30,7 @@ jobs:
 
       - name: Install Dependencies
         run: npm ci
+             npm i --save-dev cypress-mochawesome-reporter
 
       - name: Install Cypress
         run: npx cypress install
