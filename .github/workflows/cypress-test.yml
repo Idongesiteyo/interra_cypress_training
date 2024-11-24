@@ -34,6 +34,11 @@ jobs:
       - name: Install Cypress
         run: npx cypress install
 
+      - name: Create Reports Directory
+        run: |
+          mkdir -p cypress/reports/mochawesome-report
+          mkdir -p cypress/reports/.jsons
+
       - name: Grant Permissions
         run: chmod +x ./node_modules/.bin/cypress
 
@@ -51,22 +56,42 @@ jobs:
             npx cypress run \
               --browser ${{ matrix.browser }} \
               --env grep=@smoke \
-              --reporter mochawesome \
-              --reporter-options reportDir=cypress/reports,reportFilename=index.html
+              --reporter cypress-mochawesome-reporter \
+              --reporter-options charts=true,reportDir=cypress/reports/mochawesome-report,overwrite=false,html=true,json=true,embeddedScreenshots=true
           elif [ "$BRANCH_NAME" = "main" ]; then
             echo "Running full test suite on main branch..."
             npx cypress run \
               --browser ${{ matrix.browser }} \
-              --reporter mochawesome \
-              --reporter-options reportDir=cypress/reports,reportFilename=index.html
+              --reporter cypress-mochawesome-reporter \
+              --reporter-options charts=true,reportDir=cypress/reports/mochawesome-report,overwrite=false,html=true,json=true,embeddedScreenshots=true
           else
             echo "Branch $BRANCH_NAME not configured for testing"
             exit 1
           fi
 
-      - name: Archive Mochawesome Report
+      - name: Generate Mochawesome Report
+        if: always()
+        run: |
+          npx mochawesome-merge cypress/reports/mochawesome-report/*.json > cypress/reports/mochawesome-report/output.json
+          npx marge cypress/reports/mochawesome-report/output.json --reportDir cypress/reports/mochawesome-report --inline
+
+      - name: Archive Test Results
         if: always()
         uses: actions/upload-artifact@v3
         with:
-          name: mochawesome-report-${{ matrix.browser }}-${{ github.sha }}
-          path: cypress/reports/
+          name: test-results-${{ matrix.browser }}-${{ github.sha }}
+          path: |
+            cypress/reports/mochawesome-report
+            cypress/screenshots
+            cypress/videos
+          retention-days: 30
+
+      - name: Upload Test Results on Failure
+        if: failure()
+        uses: actions/upload-artifact@v3
+        with:
+          name: test-failures-${{ matrix.browser }}-${{ github.sha }}
+          path: |
+            cypress/screenshots
+            cypress/videos
+          retention-days: 7
