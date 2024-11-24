@@ -1,4 +1,4 @@
-name: Cypress Tests with Stages and Output Logging
+name: Cypress Tests
 
 on:
   push:
@@ -20,7 +20,6 @@ jobs:
         browser: [chrome, edge]
 
     steps:
-      # Stage 1: Setup
       - name: Checkout Repository
         uses: actions/checkout@v3
 
@@ -38,14 +37,9 @@ jobs:
       - name: Grant Permissions
         run: chmod +x ./node_modules/.bin/cypress
 
-      - name: Create Report Directory
-        run: mkdir -p cypress/reports
-
-      # Stage 2: Testing
-      - name: Determine Branch and Run Cypress Tests on ${{ matrix.browser }}
+      - name: Run Cypress Tests on ${{ matrix.browser }}
         run: |
           BRANCH_NAME=""
-
           if [ "${{ github.event_name }}" = "pull_request" ]; then
             BRANCH_NAME="${{ github.base_ref }}"
           else
@@ -58,36 +52,16 @@ jobs:
               --browser ${{ matrix.browser }} \
               --env grep=@smoke \
               --reporter mochawesome \
-              --reporter-options reportDir=cypress/reports,reportFilename=index.html \
-              > cypress-output.txt 2>&1
+              --reporter-options reportDir=cypress/reports,reportFilename=index.html
           elif [ "$BRANCH_NAME" = "main" ]; then
             echo "Running full test suite on main branch..."
             npx cypress run \
               --browser ${{ matrix.browser }} \
               --reporter mochawesome \
-              --reporter-options reportDir=cypress/reports,reportFilename=index.html \
-              > cypress-output.txt 2>&1
+              --reporter-options reportDir=cypress/reports,reportFilename=index.html
           else
             echo "Branch $BRANCH_NAME not configured for testing"
             exit 1
-
-      # Stage 3: Reporting
-      - name: Merge Mochawesome Reports
-        run: |
-          if ls cypress/reports/*.json 1> /dev/null 2>&1; then
-            echo "Merging Mochawesome reports..."
-            npx mochawesome-merge cypress/reports/*.json -o cypress/reports/merged-report.json
-          else
-            echo "No JSON reports found to merge."
-          fi
-
-      - name: Generate HTML Report from Merged JSON
-        run: |
-          if [ -f cypress/reports/merged-report.json ]; then
-            echo "Generating HTML report..."
-            npx marge cypress/reports/merged-report.json -o cypress/reports/
-          else
-            echo "No merged report found to generate HTML."
           fi
 
       - name: Archive Mochawesome Report
@@ -96,11 +70,3 @@ jobs:
         with:
           name: mochawesome-report-${{ matrix.browser }}-${{ github.sha }}
           path: cypress/reports/
-
-      # Stage 4: Upload Cypress Output
-      - name: Upload Cypress Output
-        if: always()
-        uses: actions/upload-artifact@v3
-        with:
-          name: cypress-output-${{ matrix.browser }}-${{ github.sha }}
-          path: cypress-output.txt
