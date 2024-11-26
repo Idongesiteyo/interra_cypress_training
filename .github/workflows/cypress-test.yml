@@ -69,13 +69,13 @@ jobs:
             npx cypress run \
               --browser ${{ matrix.browser }} \
               --env grep=@smoke \                    # Filter for smoke tests
-              --reporter-options reportDir=cypress/reports,reportFilename=index.html
+              reportDir=cypress/reports,reportFilename=index.html
           elif [ "$BRANCH_NAME" = "main" ]; then
             # Run full test suite on main
             echo "Running full test suite on main branch..."
             npx cypress run \
               --browser ${{ matrix.browser }} \
-              --reporter-options reportDir=cypress/reports,reportFilename=index.html
+              reportDir=cypress/reports,reportFilename=index.html
           else
             # Exit with error for undefined branches
             echo "Branch $BRANCH_NAME not configured for testing"
