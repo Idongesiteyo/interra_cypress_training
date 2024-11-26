@@ -69,7 +69,6 @@ jobs:
             npx cypress run \
               --browser ${{ matrix.browser }} \
               --env grep=@smoke \                    # Filter for smoke tests
-              --reporter mochawesome \               # Use mochawesome reporter
               --reporter-options reportDir=cypress/reports,reportFilename=index.html
           elif [ "$BRANCH_NAME" = "main" ]; then
             # Run full test suite on main

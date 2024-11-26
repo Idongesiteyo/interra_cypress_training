@@ -12,8 +12,9 @@
     "test": "npm run mochawesome:clear && npm run cy:run && npm run report:open",
     "mochawesome:clear": "if exist cypress\\reports (rd /s /q cypress\\reports)",
     "report:open": "start cypress/reports/index.html",
-    "cy:smoke": "cypress run --env grepTags=@smoke",
+    "cy:smoke": "cypress run --env grep=@smoke --reporter-options reportDir=cypress/reports,reportFilename=index.html",
     "cy:smoke2": "cypress run --env grep=@smoke",
+    "test:ci": "cypress run --env grep=@smoke --spec 'cypress/e2e/test_cases/hooks.cy.js'",
     "test:single": "npm run mochawesome:clear && npm run cypress:run:spec && npm run report:open"
   },
   "keywords": [],
