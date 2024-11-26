@@ -75,7 +75,6 @@ jobs:
             echo "Running full test suite on main branch..."
             npx cypress run \
               --browser ${{ matrix.browser }} \
-              --reporter mochawesome \
               --reporter-options reportDir=cypress/reports,reportFilename=index.html
           else
             # Exit with error for undefined branches
