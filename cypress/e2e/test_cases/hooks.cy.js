@@ -69,7 +69,7 @@ describe('Test suite with hooks', () =>{
        
     })
 
-    it('Problem user login', function(){
+    it('Problem user login @smoke', function(){
         cy.get('[data-test="username"]').type(userData.problemUser)
         cy.get('[data-test="password"]').type(userData.test_password)
         cy.get('[data-test="login-button"]').click()
