@@ -12,7 +12,7 @@ describe('Login Test Suite', () => {
   ];
 
   users.forEach((user) => {
-    it(`should log in successfully as ${user.username}`, () => {
+    it(`@smoke should log in successfully as ${user.username}`, () => {
       loginPage.visit();
       loginPage.enterUsername(user.username);
       loginPage.enterPassword(user.password);
